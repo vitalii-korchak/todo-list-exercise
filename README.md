@@ -14,8 +14,8 @@ Implement simple todo list which can add/remove/complete todo. Use bootstrap for
 2. Select with sort options (alphabeticaly, creation date)
 3. List of todo items
   1. Item should have description, status(active/completed) and created date text 
-  2. Item should have complete
-  3. By click on item should change statud to completed
+  2. Item should have complete button
+  3. By click on item status should be changed to completed
 
 ### Resources
 - https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Object-oriented_JS
