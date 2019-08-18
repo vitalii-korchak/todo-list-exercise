@@ -4,13 +4,23 @@ document.addEventListener("DOMContentLoaded", ready);
 
 function ready() {
   const listBox = document.querySelector("#list-box");
-  let listItemArr = JSON.parse(localStorage.getItem("storageArr")) || [];
+  let storageArr = JSON.parse(localStorage.getItem("storageArr"));
+  let listItemArr = [];
   let nameField = document.querySelector("#item-name-field");
   let descriptionField = document.querySelector("#item-description-field");
-  let addBtn = document.querySelector("#add-item-btn");
+  let todoForm = document.querySelector("#todo-form");
 
-  addBtn.addEventListener("click", addItem);
+  todoForm.addEventListener("submit", addItem);
   listBox.addEventListener("click", changeStatus);
+  document.querySelector("#sort-select").addEventListener("change", sortArr);
+
+  if (storageArr) {
+    storageArr.forEach(function (item) {
+      item.date = new Date(item.date);
+    });
+
+    listItemArr = storageArr;
+  }
 
   class ListItem {
     constructor(title, description, status = "Active") {
@@ -24,7 +34,7 @@ function ready() {
 
   class Ui {
     formatDate(date) {
-      date = new Date(date);
+      // date = new Date(date);
       let dd = date.getDate();
       if (dd < 10) dd = "0" + dd;
 
@@ -90,7 +100,6 @@ function ready() {
     saveToStorage();
   }
 
-  document.querySelector("#sort-select").addEventListener("change", sortArr);
 
   function sortArr() {
     let optionValue = this.options[this.selectedIndex].value;
