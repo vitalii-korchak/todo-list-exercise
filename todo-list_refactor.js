@@ -11,28 +11,99 @@ function todoInit() {
   const nameField = document.querySelector("#item-name-field");
   const descriptionField = document.querySelector("#item-description-field");
   const todoForm = document.querySelector("#todo-form");
+  const inputSelect = document.querySelector("#sort-select");
 
   class TodoList {
-    constructor(items = []) {
-      this.items = items.map(function(item) {
+    constructor(items = []) { // реализовать как с селектом?
+      this.items = items.map(function (item) {
         item.date = new Date(item.date);
       });
     }
 
-    addTodo = e => {
-      e.preventDefault();
-      this.items.push(new ListItem(nameField.value, descriptionField.value));
-      console.log(1, this.items);
-      // this.render(obj);
-    };
+    addTodo() {
+      let nameValue = nameField.value;
+      if (!nameValue) return;
+      this.items.push(new ListItem(nameValue, descriptionField.value));
+      this.setToStorage();
+      this.render();
+    }
 
-    // deleteTodo() {}
+    deleteTodo(id) {
+      this.items.splice(this.items.findIndex(item => item.id == id), 1);
+      this.setToStorage();
+      this.render();
+    }
 
-    // completeTodo: () => {}
+    completeTodo(id) {
+      let item = this.items.find(item => item.id == id);
+      item.status = item.status == 'Active' ? 'Completed' : 'Active';
+      this.setToStorage();
+      this.render();
+    }
 
-    // render(element) {
+    sortList(selectValue) {
+      if (selectValue == "date") {
+        this.items.sort(function (a, b) {
+          return a.date - b.date;
+        });
+      }
 
-    // }
+      if (selectValue == "alphabetical") {
+        this.items.sort(function (a, b) {
+          return a.title - b.title;
+        });
+      }
+
+      this.setToStorage();
+      this.render();
+    }
+
+    setSelectValue(selectValue) {
+      localStorage.setItem('selectValue', selectValue);
+    }
+
+    getSelectValue(elem) { // реализация?
+      if (localStorage.selectValue) {
+        elem.value = localStorage.getItem('selectValue');
+      }
+    }
+
+    formatDate(date) {
+      let dd = date.getDate();
+      if (dd < 10) dd = "0" + dd;
+
+      let mm = date.getMonth() + 1;
+      if (mm < 10) mm = "0" + mm;
+
+      let yy = date.getFullYear();
+
+      return `${dd}.${mm}.${yy}`;
+    }
+
+    render() {
+      listBox.innerHTML = '';
+      this.items.forEach(item => {
+        const row = `<hr/>
+                    <div data-id="${item.id}" class="row">
+                      <div class="col-2">${this.formatDate(item.date)}</div>
+                      <div class="col">
+                        <h5>${item.title}</h5>
+                        <div>${item.description}</div>
+                      </div>
+                      <div class="col-2">
+                        <button class="status-btn btn btn-sm btn-secondary">${item.status}</button>
+                      </div>
+                      <div class="col-3">
+                        <button class="complete-btn btn btn-sm btn-primary">Complete</button>
+                      </div>
+                    </div>`;
+        listBox.insertAdjacentHTML("beforeEnd", row);
+      });
+    }
+
+    setToStorage() {
+      localStorage.setItem("items", JSON.stringify(this.items));
+    }
   }
 
   class ListItem {
@@ -52,7 +123,27 @@ function todoInit() {
 
   const todoList = new TodoList();
 
-  todoForm.addEventListener("submit", todoList.addTodo);
-  // listBox.addEventListener("click", changeStatus);
-  // document.querySelector("#sort-select").addEventListener("change", sortArr);
+  todoList.getSelectValue(inputSelect); //????????????????
+
+  todoForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    todoList.addTodo();
+    this.reset();
+  });
+
+  listBox.addEventListener("click", function (e) {
+    let completeBtn = e.target.closest('.complete-btn');
+    let statusBtn = e.target.closest('.status-btn');
+    if (completeBtn) {
+      todoList.deleteTodo(completeBtn.closest('[data-id]').getAttribute("data-id"));
+    }
+    if (statusBtn) {
+      todoList.completeTodo(statusBtn.closest('[data-id]').getAttribute("data-id"));
+    }
+  });
+
+  inputSelect.addEventListener("change", function (e) {
+    todoList.sortList(this.value);
+    todoList.setSelectValue(this.value); // вызывать тут или в sortList?
+  });
 }
