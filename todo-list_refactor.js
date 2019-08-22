@@ -6,6 +6,14 @@ function ready() {
   todoInit();
 }
 
+function getTodoList() {
+  return localStorage.getItem("todoList") || {};
+}
+
+function setTodoList(todoList) {
+  return localStorage.setItem("todoList", todoList);
+}
+
 function todoInit() {
   const listBox = document.querySelector("#list-box");
   const nameField = document.querySelector("#item-name-field");
@@ -14,8 +22,10 @@ function todoInit() {
   const inputSelect = document.querySelector("#sort-select");
 
   class TodoList {
-    constructor(items = []) { // реализовать как с селектом?
-      this.items = items.map(function (item) {
+    constructor({ order = "default", items = [] }) {
+      // реализовать как с селектом?
+      this.order = order;
+      this.items = items.map(function(item) {
         item.date = new Date(item.date);
       });
     }
@@ -36,20 +46,20 @@ function todoInit() {
 
     completeTodo(id) {
       let item = this.items.find(item => item.id == id);
-      item.status = item.status == 'Active' ? 'Completed' : 'Active';
+      item.status = item.status == "Active" ? "Completed" : "Active";
       this.setToStorage();
       this.render();
     }
 
     sortList(selectValue) {
       if (selectValue == "date") {
-        this.items.sort(function (a, b) {
+        this.items.sort(function(a, b) {
           return a.date - b.date;
         });
       }
 
       if (selectValue == "alphabetical") {
-        this.items.sort(function (a, b) {
+        this.items.sort(function(a, b) {
           return a.title - b.title;
         });
       }
@@ -59,12 +69,14 @@ function todoInit() {
     }
 
     setSelectValue(selectValue) {
-      localStorage.setItem('selectValue', selectValue);
+      this.order = selectValue;
+      // this.setToStorage();
     }
 
-    getSelectValue(elem) { // реализация?
+    getSelectValue(elem) {
+      // реализация?
       if (localStorage.selectValue) {
-        elem.value = localStorage.getItem('selectValue');
+        elem.value = localStorage.getItem("selectValue");
       }
     }
 
@@ -81,7 +93,7 @@ function todoInit() {
     }
 
     render() {
-      listBox.innerHTML = '';
+      listBox.innerHTML = "";
       this.items.forEach(item => {
         const row = `<hr/>
                     <div data-id="${item.id}" class="row">
@@ -91,7 +103,9 @@ function todoInit() {
                         <div>${item.description}</div>
                       </div>
                       <div class="col-2">
-                        <button class="status-btn btn btn-sm btn-secondary">${item.status}</button>
+                        <button class="status-btn btn btn-sm btn-secondary">${
+                          item.status
+                        }</button>
                       </div>
                       <div class="col-3">
                         <button class="complete-btn btn btn-sm btn-primary">Complete</button>
@@ -101,9 +115,12 @@ function todoInit() {
       });
     }
 
-    setToStorage() {
-      localStorage.setItem("items", JSON.stringify(this.items));
-    }
+    setToStorage = () => {
+      setTodoList({
+        order: this.order,
+        items: this.items
+      });
+    };
   }
 
   class ListItem {
@@ -125,25 +142,29 @@ function todoInit() {
 
   todoList.getSelectValue(inputSelect); //????????????????
 
-  todoForm.addEventListener("submit", function (e) {
+  todoForm.addEventListener("submit", function(e) {
     e.preventDefault();
     todoList.addTodo();
     this.reset();
   });
 
-  listBox.addEventListener("click", function (e) {
-    let completeBtn = e.target.closest('.complete-btn');
-    let statusBtn = e.target.closest('.status-btn');
+  listBox.addEventListener("click", function(e) {
+    let completeBtn = e.target.closest(".complete-btn");
+    let statusBtn = e.target.closest(".status-btn");
     if (completeBtn) {
-      todoList.deleteTodo(completeBtn.closest('[data-id]').getAttribute("data-id"));
+      todoList.deleteTodo(
+        completeBtn.closest("[data-id]").getAttribute("data-id")
+      );
     }
     if (statusBtn) {
-      todoList.completeTodo(statusBtn.closest('[data-id]').getAttribute("data-id"));
+      todoList.completeTodo(
+        statusBtn.closest("[data-id]").getAttribute("data-id")
+      );
     }
   });
 
-  inputSelect.addEventListener("change", function (e) {
-    todoList.sortList(this.value);
+  inputSelect.addEventListener("change", function(e) {
+    // todoList.sortList(this.value);
     todoList.setSelectValue(this.value); // вызывать тут или в sortList?
   });
 }
