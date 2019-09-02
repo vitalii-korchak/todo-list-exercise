@@ -74,26 +74,69 @@ class TodoList {
   }
 
   render() {
-    this.rootEl.innerHTML = "";
+    const fragment = new DocumentFragment();
+
     this.items.forEach(item => {
-      const row = `<hr/>
-                  <div data-id="${item.id}" class="row">
-                    <div class="col-2">${this.formatDate(item.date)}</div>
-                    <div class="col">
-                      <h5>${item.name}</h5>
-                      <div>${item.description}</div>
-                    </div>
-                    <div class="col-2">
-                      <button class="status-btn btn btn-sm btn-secondary">${
-                        item.status
-                      }</button>
-                    </div>
-                    <div class="col-3">
-                      <button class="complete-btn btn btn-sm btn-primary">Complete</button>
-                    </div>
-                  </div>`;
-      this.rootEl.insertAdjacentHTML("beforeEnd", row);
+      const hr = document.createElement('hr');
+      const row = document.createElement('div');
+      const divDate = document.createElement('div');
+      const divText = document.createElement('div');
+      const h5 = document.createElement('h5');
+      const divDescription = document.createElement('div');
+      const divStatus = document.createElement('div');
+      const statusBtn = document.createElement('button');
+      const divComplete = document.createElement('div');
+      const completeBtn = document.createElement('button');
+
+      row.className = 'row';
+      row.setAttribute('data-id', item.id);
+      divDate.className = 'col-2';
+      divText.className = 'col';
+      statusBtn.className = 'status-btn btn btn-sm btn-secondary';
+      divStatus.className = 'col-2';
+      completeBtn.className = 'complete-btn btn btn-sm btn-primary';
+      divComplete.className = 'col-3';
+
+      divDate.append(this.formatDate(item.date));
+      h5.append(item.name);
+      divDescription.append(item.description);
+      divText.append(h5, divDescription);
+      statusBtn.append(item.status);
+      divStatus.append(statusBtn);
+      completeBtn.append('Complete');
+      divComplete.append(completeBtn);
+
+      row.append(divDate, divText, divStatus, divComplete);
+      fragment.append(hr, row)
     });
+
+    if (!fragment.firstChild) return;
+    console.log(fragment);
+
+    this.rootEl.innerHTML = '';
+    this.rootEl.append(fragment);
+
+
+    // this.items.forEach(item => {
+    //   const row = `<hr/>
+    //               <div data-id="${item.id}" class="row">
+    //                 <div class="col-2">${this.formatDate(item.date)}</div>
+    //                 <div class="col">
+    //                   <h5>${item.name}</h5>
+    //                   <div>${item.description}</div>
+    //                 </div>
+    //                 <div class="col-2">
+    //                   <button class="status-btn btn btn-sm btn-secondary">${item.status}</button>
+    //                 </div>
+    //                 <div class="col-3">
+    //                   <button class="complete-btn btn btn-sm btn-primary">Complete</button>
+    //                 </div>
+    //               </div>`;
+    //   box.insertAdjacentHTML("beforeEnd", row);
+    // });
+    // if (!box.firstChild) return;
+    // this.rootEl.innerHTML = "";
+    // this.rootEl.insertAdjacentHTML("beforeEnd", box);
   }
 
   setToStorage = () => {
@@ -109,9 +152,9 @@ class ListItem {
     this.id =
       id ||
       "_" +
-        Math.random()
-          .toString(36)
-          .substr(2, 9);
+      Math.random()
+        .toString(36)
+        .substr(2, 9);
     this.date = date ? new Date(date) : new Date();
     this.name = name;
     this.description = description;
@@ -132,16 +175,16 @@ function todoInit() {
   const todoList = new TodoList(listBox, TodoListStorage.get());
 
   todoList.render();
-  sortSelect.value = TodoListStorage.get().order;
+  sortSelect.value = todoList.order;
 
-  todoForm.addEventListener("submit", function(e) {
+  todoForm.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!this.name.value) return;
     todoList.addTodo(this.name.value, this.description.value);
     this.reset();
   });
 
-  listBox.addEventListener("click", function(e) {
+  listBox.addEventListener("click", function (e) {
     const completeBtn = e.target.closest(".complete-btn");
     const statusBtn = e.target.closest(".status-btn");
 
@@ -158,7 +201,7 @@ function todoInit() {
     }
   });
 
-  sortSelect.addEventListener("change", function(e) {
+  sortSelect.addEventListener("change", function (e) {
     todoList.sortBy(this.value);
   });
 }
