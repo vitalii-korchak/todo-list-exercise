@@ -24,7 +24,6 @@ class TodoList {
   }
 
   addTodo(name, description) {
-    if (!name) return;
     this.items.push(new ListItem({ name, description }));
     this.setToStorage();
     this.render();
@@ -55,15 +54,11 @@ class TodoList {
     }
   }
 
-  setSelectValue(selectValue) {
+  sortBy(selectValue) {
     this.order = selectValue;
     this.sortList();
     this.setToStorage();
     this.render();
-  }
-
-  getSelectValue(elem) {
-    elem.value = this.order;
   }
 
   formatDate(date) {
@@ -90,8 +85,8 @@ class TodoList {
                     </div>
                     <div class="col-2">
                       <button class="status-btn btn btn-sm btn-secondary">${
-        item.status
-        }</button>
+                        item.status
+                      }</button>
                     </div>
                     <div class="col-3">
                       <button class="complete-btn btn btn-sm btn-primary">Complete</button>
@@ -114,9 +109,9 @@ class ListItem {
     this.id =
       id ||
       "_" +
-      Math.random()
-        .toString(36)
-        .substr(2, 9);
+        Math.random()
+          .toString(36)
+          .substr(2, 9);
     this.date = date ? new Date(date) : new Date();
     this.name = name;
     this.description = description;
@@ -132,20 +127,21 @@ class ListItem {
 function todoInit() {
   const listBox = document.querySelector("#list-box");
   const todoForm = document.querySelector("#todo-form");
-  const inputSelect = document.querySelector("#sort-select");
+  const sortSelect = document.querySelector("#sort-select");
 
   const todoList = new TodoList(listBox, TodoListStorage.get());
 
   todoList.render();
-  todoList.getSelectValue(inputSelect);
+  sortSelect.value = TodoListStorage.get().order;
 
-  todoForm.addEventListener("submit", function (e) {
+  todoForm.addEventListener("submit", function(e) {
     e.preventDefault();
+    if (!this.name.value) return;
     todoList.addTodo(this.name.value, this.description.value);
     this.reset();
   });
 
-  listBox.addEventListener("click", function (e) {
+  listBox.addEventListener("click", function(e) {
     const completeBtn = e.target.closest(".complete-btn");
     const statusBtn = e.target.closest(".status-btn");
 
@@ -162,7 +158,7 @@ function todoInit() {
     }
   });
 
-  inputSelect.addEventListener("change", function (e) {
-    todoList.setSelectValue(this.value);
+  sortSelect.addEventListener("change", function(e) {
+    todoList.sortBy(this.value);
   });
 }
